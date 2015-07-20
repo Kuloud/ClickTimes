@@ -32,10 +32,14 @@ public class MainActivity extends Activity {
 //                Toast.makeText(mContext, "onInvalidClick!", Toast.LENGTH_SHORT).show();
 //            }
 //        });
-        mBtn.setOnClickListener(new OnCountClickListener() {
+        mBtn.setOnClickListener(new OnCountClickListener(4, 7) {
             @Override
             protected void onCountdown(int count) {
-                Toast.makeText(mContext, "onCountdown: " + count, Toast.LENGTH_SHORT).show();
+                if (count > 0) {
+                    Toast.makeText(mContext, "onCountdown: " + count, Toast.LENGTH_SHORT).show();
+                } else {
+                    // Do something
+                }
             }
         });
     }

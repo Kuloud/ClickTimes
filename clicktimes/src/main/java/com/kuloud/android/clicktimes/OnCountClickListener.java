@@ -12,6 +12,8 @@ import java.security.InvalidParameterException;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import static com.kuloud.android.clicktimes.TimeUtils.since;
+
 
 /**
  * @author kuloud
@@ -20,7 +22,8 @@ public abstract class OnCountClickListener implements OnClickListener {
     private static final int VALID_DURATION_IN_MILLIS = 3000;
     private static final int START_CLICK_COUNT = 3;
     private static final int END_CLICK_COUNT = 5;
-    private Queue<Long> mClickTimestamps;
+    private long mClickTimestamp;
+    private int count;
     private int startTimes;
     private int endTimes;
 
@@ -36,25 +39,20 @@ public abstract class OnCountClickListener implements OnClickListener {
         if (startTimes < 0 || startTimes > endTimes || endTimes <= 0) {
             throw new InvalidParameterException("Valid params: endTimes >= startTimes >= 0 && endTimes > 0");
         }
-        mClickTimestamps = new LinkedBlockingQueue<Long>(endTimes);
         this.startTimes = startTimes;
         this.endTimes = endTimes;
     }
 
     @Override
     public void onClick(View v) {
-        long currentTimestamp = SystemClock.elapsedRealtime();
-        while (!mClickTimestamps.isEmpty()
-                && ((currentTimestamp - mClickTimestamps.peek()) >= VALID_DURATION_IN_MILLIS)) {
-            mClickTimestamps.remove();
-        }
-        mClickTimestamps.add(currentTimestamp);
-        int count = mClickTimestamps.size() - startTimes;
-        if (count >= 0) {
-            int countDown = endTimes - startTimes - count;
-            if (countDown >= 0) {
-                onCountdown(count);
+        if (since(mClickTimestamp) <= VALID_DURATION_IN_MILLIS) {
+            count++;
+            if (count >= startTimes && count <= endTimes) {
+                onCountdown(endTimes - count);
             }
+        } else {
+            count = 1;
+            mClickTimestamp = SystemClock.elapsedRealtime();
         }
     }
 
